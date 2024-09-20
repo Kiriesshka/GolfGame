@@ -12,6 +12,7 @@ public class PlayerCube : MonoBehaviour
     public OrbitCamera Oc;
     public Color startColor;
     public Color endColor;
+    public bool isInHole;
     public bool canTryPunch() => rb.linearVelocity.magnitude <= 0.1f ? true : false;
     private void Start()
     {
@@ -47,7 +48,7 @@ public class PlayerCube : MonoBehaviour
                 arrow.transform.rotation = Quaternion.Euler(rotation);
                 punchForce = direction.magnitude/Screen.height*30;
                 arrow.GetChild(0).GetComponent<Renderer>().material.color = Color.Lerp(startColor, endColor, direction.magnitude/Screen.height*2);
-                arrow.GetChild(0).transform.localScale = new Vector3(3* (0.5f+direction.magnitude / Screen.height), 0.2f, 0.2f);
+                arrow.GetChild(0).transform.localScale = new Vector3(3* (0.2f+direction.magnitude / Screen.height), 0.2f, 0.2f);
                 arrow.GetChild(0).transform.localPosition = new Vector3(-arrow.GetChild(0).transform.localScale.x / 2, 0, 0);
             }
             else
@@ -64,6 +65,13 @@ public class PlayerCube : MonoBehaviour
         {
             calculateDirection = true;
             ShowArrow();
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.transform.tag == "Hole")
+        {
+            isInHole = true;
         }
     }
 }

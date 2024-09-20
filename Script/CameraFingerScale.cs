@@ -30,10 +30,6 @@ public class CameraFingerScale : MonoBehaviour
                 if (newSize > maxSize) newSize = maxSize;
                 if (newSize < minSize) newSize = minSize;
                 oC.distance = newSize;
-
-            
-
-
         }
         else
         {
