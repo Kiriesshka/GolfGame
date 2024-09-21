@@ -25,7 +25,7 @@ public class PlayerCube : MonoBehaviour
     private List<LevelInfo> levelInfos;
     private DataSaver dS;
     private Vector3 startPos;
-    public bool canTryPunch() => rb.linearVelocity.magnitude <= 0.1f ? true : false;
+    public bool canTryPunch() => rb.linearVelocity.magnitude <= 0.2f ? true : false;
     private void Start()
     {
 
@@ -94,22 +94,27 @@ public class PlayerCube : MonoBehaviour
         dS.fileName = "SAVE";
         dS.fileExtension = ".txt";
         endGameWindow.SetActive(true);
+      
+        txt.gameObject.SetActive(false);
         dS.Load();
         levelInfos = new List<LevelInfo>();
 
         levelInfos.Add(dS.GetClass<LevelInfo>("FIRST"));
         levelInfos.Add(dS.GetClass<LevelInfo>("SECOND"));
+        levelInfos.Add(dS.GetClass<LevelInfo>("3rd"));
 
         levelInfos[levelID-1].isCompleted = true;
-        if (punchCount < punchesForThreeStar && levelInfos[levelID - 1].stars<3) levelInfos[levelID-1].stars = 3;
-        else if (punchCount < punchesForTwoStar && levelInfos[levelID - 1].stars<2) levelInfos[levelID-1].stars = 2;
-        else if (punchCount < punchesForOneStar && levelInfos[levelID - 1].stars < 1) levelInfos[levelID-1].stars = 1;
-        else levelInfos[levelID].stars = 0;
+        if (punchCount < punchesForThreeStar && levelInfos[levelID - 1].stars<=3) levelInfos[levelID-1].stars = 3;
+        else if (punchCount < punchesForTwoStar && levelInfos[levelID - 1].stars<=2) levelInfos[levelID-1].stars = 2;
+        else if (punchCount < punchesForOneStar && levelInfos[levelID - 1].stars <= 1) levelInfos[levelID-1].stars = 1;
+        else levelInfos[levelID-1].stars = 0;
 
+        endGameWindow.transform.GetChild(1).GetComponent<TMP_Text>().text = $"Статистика:\nКоличество ударов: {punchCount}\nКоличество звезд: {levelInfos[levelID - 1].stars}";
         dS.Clear();
 
         dS.Add("FIRST", levelInfos[0]);
         dS.Add("SECOND", levelInfos[1]);
+        dS.Add("3rd", levelInfos[2]);
 
         dS.Save();
     }

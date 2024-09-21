@@ -64,7 +64,7 @@ public class MenuLevelChange : MonoBehaviour
             for(int i = 0; i < lI.stars; i++)
             {
                 if (i > 3) break;
-                card.transform.GetChild(0).GetChild(2).GetChild(i).gameObject.SetActive(true);
+                card.transform.GetChild(0).GetChild(2).GetChild(i).GetChild(0).gameObject.SetActive(true);
             }
             instantiated.Add(card);
         }
@@ -75,13 +75,18 @@ public class MenuLevelChange : MonoBehaviour
 
         LevelInfo a = new LevelInfo();
         a.id = 1;
-        a.levelName = "first";
+        a.levelName = "Угол";
         dS.Add("FIRST", a);
 
         LevelInfo b = new LevelInfo();
         b.id = 2;
-        b.levelName = "second";
+        b.levelName = "Рампа";
         dS.Add("SECOND", b);
+
+        LevelInfo c = new LevelInfo();
+        c.id = 3;
+        c.levelName = "Наклон";
+        dS.Add("3rd", c);
 
         dS.Save();
     }
@@ -90,6 +95,7 @@ public class MenuLevelChange : MonoBehaviour
         dS.Clear();
         dS.Add("FIRST", levelInfos[0]);
         dS.Add("SECOND", levelInfos[1]);
+        dS.Add("3rd", levelInfos[2]);
         dS.Save();
     }
     public void Load()
@@ -98,6 +104,7 @@ public class MenuLevelChange : MonoBehaviour
         levelInfos = new List<LevelInfo>();
         levelInfos.Add(dS.GetClass<LevelInfo>("FIRST"));
         levelInfos.Add(dS.GetClass<LevelInfo>("SECOND"));
+        levelInfos.Add(dS.GetClass<LevelInfo>("3rd"));
     }
 }
 public class LevelInfo
