@@ -1,5 +1,7 @@
 using UnityEngine;
-
+using KiriesshkaData;
+using System.Collections.Generic;
+using TMPro;
 public class PlayerCube : MonoBehaviour
 {
     public string state;
@@ -13,9 +15,25 @@ public class PlayerCube : MonoBehaviour
     public Color startColor;
     public Color endColor;
     public bool isInHole;
+    public int levelID;
+    public int punchCount;
+    public int punchesForOneStar;
+    public int punchesForTwoStar;
+    public int punchesForThreeStar;
+    public TMP_Text txt;
+    public GameObject endGameWindow;
+    private List<LevelInfo> levelInfos;
+    private DataSaver dS;
+    private Vector3 startPos;
     public bool canTryPunch() => rb.linearVelocity.magnitude <= 0.1f ? true : false;
     private void Start()
     {
+
+        txt.text = "Количество ударов: " + punchCount + "\n"+punchesForOneStar+"\n"+punchesForTwoStar+"\n"+punchesForThreeStar;
+        startPos = transform.position;
+        dS = new DataSaver();
+        dS.fileName = "SAVE";
+        dS.fileExtension = ".txt";
         Application.targetFrameRate = 120;
         state = "Start->INIT";
         rb = GetComponent<Rigidbody>();
@@ -32,11 +50,13 @@ public class PlayerCube : MonoBehaviour
     }
     public void Punch()
     {
+        punchCount++;
         rb.AddForce(arrow.transform.right *punchForce, ForceMode.Impulse);
+        txt.text = "Количество ударов: " + punchCount + "\n" + punchesForOneStar + "\n" + punchesForTwoStar + "\n" + punchesForThreeStar;
     }
     private void Update()
     {
-        if (calculateDirection)
+        if (calculateDirection && !isInHole)
         {
             if (Input.touchCount > 0)
             {
@@ -48,8 +68,8 @@ public class PlayerCube : MonoBehaviour
                 arrow.transform.rotation = Quaternion.Euler(rotation);
                 punchForce = direction.magnitude/Screen.height*30;
                 arrow.GetChild(0).GetComponent<Renderer>().material.color = Color.Lerp(startColor, endColor, direction.magnitude/Screen.height*2);
-                arrow.GetChild(0).transform.localScale = new Vector3(3* (0.2f+direction.magnitude / Screen.height), 0.2f, 0.2f);
-                arrow.GetChild(0).transform.localPosition = new Vector3(-arrow.GetChild(0).transform.localScale.x / 2, 0, 0);
+                arrow.GetChild(0).transform.localScale = new Vector3(45, 45, 220 *(0.2f+ direction.magnitude / Screen.height));
+                arrow.GetChild(0).transform.localPosition = new Vector3(-arrow.GetChild(0).transform.localScale.z/40 / 2, 0, 0);
             }
             else
             {
@@ -63,15 +83,48 @@ public class PlayerCube : MonoBehaviour
     {
         if (canTryPunch())
         {
+            startPos = transform.position;
             calculateDirection = true;
             ShowArrow();
         }
+    }
+    public void EndGame()
+    {
+        dS = new DataSaver();
+        dS.fileName = "SAVE";
+        dS.fileExtension = ".txt";
+        endGameWindow.SetActive(true);
+        dS.Load();
+        levelInfos = new List<LevelInfo>();
+
+        levelInfos.Add(dS.GetClass<LevelInfo>("FIRST"));
+        levelInfos.Add(dS.GetClass<LevelInfo>("SECOND"));
+
+        levelInfos[levelID-1].isCompleted = true;
+        if (punchCount < punchesForThreeStar && levelInfos[levelID - 1].stars<3) levelInfos[levelID-1].stars = 3;
+        else if (punchCount < punchesForTwoStar && levelInfos[levelID - 1].stars<2) levelInfos[levelID-1].stars = 2;
+        else if (punchCount < punchesForOneStar && levelInfos[levelID - 1].stars < 1) levelInfos[levelID-1].stars = 1;
+        else levelInfos[levelID].stars = 0;
+
+        dS.Clear();
+
+        dS.Add("FIRST", levelInfos[0]);
+        dS.Add("SECOND", levelInfos[1]);
+
+        dS.Save();
     }
     private void OnTriggerEnter(Collider other)
     {
         if(other.transform.tag == "Hole")
         {
+            EndGame();
             isInHole = true;
+        }
+        if (other.transform.tag == "OOB")
+        {
+            transform.position = startPos;
+            rb.angularVelocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
         }
     }
 }
